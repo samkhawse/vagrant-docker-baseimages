@@ -11,7 +11,10 @@ RUN apt-get update && apt-get install -y \
     lsb-release \
     openssh-server \
     sudo \
-    python
+    python \
+    clang \
+    libicu-dev \
+    git
 
 # ensure we have the en_US.UTF-8 locale available
 RUN locale-gen en_US.UTF-8
@@ -35,6 +38,18 @@ RUN mkdir -p /home/vagrant/.ssh \
 
 # don't clean packages, we might be using vagrant-cachier
 RUN rm /etc/apt/apt.conf.d/docker-clean
+
+# Create SwiftEnv
+RUN mkdir -p /home/vagrant/.swiftenv
+RUN git clone https://github.com/kylef/swiftenv /home/vagrant/.swiftenv
+
+RUN echo 'export SWIFTENV_ROOT="$HOME/.swiftenv"' >> /home/vagrant/.bashrc
+RUN echo 'export PATH="$SWIFTENV_ROOT/bin:$PATH"' >> /home/vagrant/.bashrc
+RUN echo 'eval "$(swiftenv init -)"' >> /home/vagrant/.bashrc
+RUN source /home/vagrant/.bashrc
+
+# get Swift sources
+RUN swiftenv install https://swift.org/builds/swift-4.0.3-release/ubuntu1604/swift-4.0.3-RELEASE/swift-4.0.3-RELEASE-ubuntu16.04.tar.gz
 
 # run sshd in the foreground
 CMD /usr/sbin/sshd -D \
